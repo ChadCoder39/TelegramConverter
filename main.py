@@ -69,7 +69,10 @@ def get_file(message):
         user_id = message.chat.id
         bot.send_message(message.chat.id, user_conversion_format[user_id])
 
-    
+        # deleting file
+        file_path = f"./assets/{user_id}.{fileExtension}"
+        if os.path.exists(file_path):
+            os.remove(file_path)
         
         
 
