@@ -7,7 +7,8 @@ import random
 
 
 from App1 import API_KEY
-from functions.generate_keyboard import generate_keyboard
+from functions.generate_keyboard import generate_keyboard, keys_config
+from functions.converter import convertion
 
 
 bot = telebot.TeleBot(API_KEY)
@@ -50,7 +51,10 @@ def get_file(message):
     downloadedFile = bot.download_file(file.file_path)
 
     # saving
-    with open(f"./assets/{''.join(random.choices(string.ascii_lowercase, k=12))}.{fileExtension}", 'wb') as new_file:
+    randomFileName = ''.join(random.choices(string.ascii_lowercase, k=12))
+    filePath = f"./assets/{randomFileName}.{fileExtension}"
+
+    with open(filePath, 'wb') as new_file:
         new_file.write(downloadedFile)
 
     # sending the keyboards list to user
@@ -67,12 +71,32 @@ def get_file(message):
 
         # unique user id
         user_id = message.chat.id
-        bot.send_message(message.chat.id, user_conversion_format[user_id])
+
+
+        # CONVERT
+        outputExtension = str(message.text).split()[-1].lower()
+        convertedFilePath = convertion(fileExtension, outputExtension, filePath, randomFileName)
+
+        if convertedFilePath is not None:
+            file = open(convertedFilePath, 'rb')
+
+            if outputExtension in ['pdf', 'docx', 'txt']:
+                bot.send_document(message.chat.id, file)
+
+            file.close()
+
+
+
 
         # deleting file
-        file_path = f"./assets/{user_id}.{fileExtension}"
-        if os.path.exists(file_path):
-            os.remove(file_path)
+        if os.path.exists(filePath):
+            #print('rm file ' + filePath)
+            os.remove(filePath)
+            os.remove(convertedFilePath)
+            
+
+
+
         
         
 
